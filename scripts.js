@@ -18,23 +18,11 @@ IdeaCard.prototype.qualityString = function() {
 	return qualityArray[this.quality]; //this = IdeaCard
 };
 
-//increments the quality value
-IdeaCard.prototype.qualityIncrement = function() { 
-	if (this.quality < 2) {
-		this.quality++;
-	}
-};
-
-//decrements the quality value
-IdeaCard.prototype.qualityDecrement = function() {
-	if (this.quality > 0) {
-		this.quality--;
-	}
-};
-
 //checks for matches in title, body and quality in the search input
 IdeaCard.prototype.doYouMatch = function(searchTerm) {
-	if (this.title.toUpperCase().includes(searchTerm) || this.idea.toUpperCase().includes(searchTerm) || this.qualityString().toUpperCase().includes(searchTerm)) {
+	if (this.title.toUpperCase().includes(searchTerm) 
+		|| this.idea.toUpperCase().includes(searchTerm) 
+		|| this.qualityString().toUpperCase().includes(searchTerm)) {
 		return true;
 	} else {
 		return false;
@@ -47,19 +35,13 @@ $('.save-button').on('click', function(e) {
 	formSubmit();
 });
 
-$('section').on('click', '.upvote-button', upvoteCard);
-
-$('section').on('click', '.downvote-button', downvoteCard);
+$('section').on('click', '.upvote-button, .downvote-button', changeQuality);
 
 $('section').on('click', '.delete-button', deleteCard);
 
-$('section').on('click', 'h2', editTitle);
+$('section').on('click', 'h2, p', editIdea);
 
-$('section').on('click', 'p', editIdea);
-
-$('section').on('focusout', '.edit-title', editTitleSave);
-
-$('section').on('focusout', '.edit-idea', editIdeaSave);
+$('section').on('focusout', '.edit-title, .edit-idea', editIdeaSave);
 
 $('section').on('keyup', '.edit-title', function(e) {
 	if (e.keyCode === 13) {
@@ -129,20 +111,17 @@ function populateCard(ideaCard) {
 			</article>`);
 };
 
-//replaces the quality string and saves quality
-function upvoteCard() {
+function changeQuality() {
  	var ideaCard = extractCard(this);
-	ideaCard.qualityIncrement();
+	var currentQuality = ideaCard.quality;
+	var indexChange = $(this).hasClass('upvote-button') ? 1:-1;
+	var qualityArray = ['swill', 'plausible', 'genius'];
+	var nextQuality = currentQuality + indexChange;
+	if (qualityArray[nextQuality] !== undefined) {
+	ideaCard.quality = nextQuality;
 	$(this).closest('article').replaceWith(populateCard(ideaCard));
 	sendToLocalStorage();
-};
-
-//replaces quality string and saves quality
-function downvoteCard() {
- 	var ideaCard = extractCard(this);
-	ideaCard.qualityDecrement();
-	$(this).closest('article').replaceWith(populateCard(ideaCard));
-	sendToLocalStorage();
+	};
 };
 
 function deleteCard(e) {
@@ -152,27 +131,18 @@ function deleteCard(e) {
 };
 
 //edits and saves title and idea
-function editTitle() {
-	var article = $(this).closest('article');
-	$('h2', article).replaceWith(`<textarea class="idea-title edit-title">${$(this).text()}</textarea>`);
-	$('.edit-title').focus();
-};
-
 function editIdea() {
 	var article = $(this).closest('article');
-	$('p', article).replaceWith(`<textarea class="idea-body edit-idea">${$(this).text()}</textarea>`);
-	$('.edit-idea').focus();
-};
-
-function editTitleSave() {
-	$(this).replaceWith(`<h2 class="idea-title">${$(this).val()}</h2>`);
-	var ideaCard = extractCard(this);
-	$(this).closest('article').replaceWith(populateCard(ideaCard));
-	sendToLocalStorage();
+	$(this).hasClass('idea-title') ? 
+	$('h2', article).replaceWith(`<textarea class="idea-title edit-title">${$(this).text()}</textarea>`)
+	: $('p', article).replaceWith(`<textarea class="idea-body edit-idea">${$(this).text()}</textarea>`);
+	$('textarea').focus();
 };
 
 function editIdeaSave() {
-	$(this).replaceWith(`<p class="idea-body">${$(this).val()}</p>`);
+	$(this).hasClass('idea-title') ?
+	$(this).replaceWith(`<h2 class="idea-title">${$(this).val()}</h2>`)
+	: $(this).replaceWith(`<p class="idea-body">${$(this).val()}</p>`);
 	var ideaCard = extractCard(this);
 	$(this).closest('article').replaceWith(populateCard(ideaCard));
 	sendToLocalStorage();
